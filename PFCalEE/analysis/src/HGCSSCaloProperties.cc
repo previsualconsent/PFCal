@@ -34,7 +34,8 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
   indirpath << PATH_TO_G4_FILES << "/"
 	    << version << "/"
 	    << PARTICLE_TYPE << "/"
-	    << "e_" << (Int_t) eElec;
+	    << "e_" << (Int_t) eElec
+            << PARTICLE_ALPHA;
 
   TString inDir(indirpath.str().c_str()); 
   
@@ -295,8 +296,7 @@ void CaloProperties::characterizeCalo()
   gr_centeredShowerMax = (TGraph *) gr_showerMax->Clone("centeredshowermax_"+tag_);
 
   //build shower profiles
-  //Float_t genEn[]={5,10,25,50,75,100,150,200,300};//,500};
-  Float_t genEn[]={5,10,25,50,75,100,150,200,300,500};//,500};
+  Float_t genEn[]={5,10,25,50,75,100,150,200,300};//,500};
   const Int_t nGenEn=sizeof(genEn)/sizeof(Float_t);
   for(Int_t i=0; i<nGenEn; i++)
     {

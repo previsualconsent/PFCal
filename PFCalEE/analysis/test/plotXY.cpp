@@ -16,24 +16,26 @@
 
 int main(int argc, char** argv){//main  
 
-  if (argc < 2) {
+  if (argc < 3) {
     std::cout << " Usage: " 
 	      << argv[0] << " <nEvts to process (0=all)>"
+              << " <input_dir>" 
 	      << " <optional: debug (default=0)>"
 	      << std::endl;
     return 1;
   }
 
   const unsigned pNevts = atoi(argv[1]);
+  const std::string inDir = argv[2];
   bool debug = false;
-  if (argc >2) debug = atoi(argv[2]);
+  if (argc >3) debug = atoi(argv[3]);
 
   TFile *outputFile = TFile::Open("DigiHistos.root","RECREATE");
 
   const unsigned nLayers = N_LAYERS;
 
-  unsigned genEn[]={5,10,25,50,75,100,150,200,300,500};
-  //unsigned genEn[]={10};
+  //unsigned genEn[]={5,10,25,50,75,100,150,200,300,500};
+  unsigned genEn[]={10};
   const unsigned nGenEn=sizeof(genEn)/sizeof(unsigned);
   
   TH2F *p_xy[nGenEn][nLayers];
@@ -60,7 +62,7 @@ int main(int argc, char** argv){//main
     }
     
     std::ostringstream input;
-    input << "/afs/cern.ch/user/a/amagnan/SLHC/PFCal/PFCalEE/version_18/e-/e_" << genEn[iE] << "/PFcal.root";
+    input << inDir << genEn[iE] << "_0.250" << "/PFcal.root";
     TFile *inputFile = TFile::Open(input.str().c_str());
 
     if (!inputFile) {
