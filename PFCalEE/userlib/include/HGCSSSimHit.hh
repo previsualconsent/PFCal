@@ -62,12 +62,6 @@ public:
     return cellid_;
   };
 
-  inline double weight() const{
-    if (layer_ < 10) return 1;
-    else if (layer_ < 20) return 2;
-    else return 3;
-  };
-
   inline unsigned nGammas() const {
     return nGammas_;
   };

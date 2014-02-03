@@ -23,44 +23,40 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file eventgenerator/HepMC/HepMCEx01/include/HepMCG4AsciiReaderMessenger.hh
+/// \brief Definition of the HepMCG4AsciiReaderMessenger class
 //
-// $Id$
+// ====================================================================
 //
-// 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#ifndef PrimaryGeneratorMessenger_h
-#define PrimaryGeneratorMessenger_h 1
+//   HepMCG4AsciiReaderMessenger.hh
+//   $Id$
+//
+// ====================================================================
+#ifndef HEPMC_G4_ASCII_READER_MESSENGER_H
+#define HEPMC_G4_ASCII_READER_MESSENGER_H
 
 #include "G4UImessenger.hh"
-#include "globals.hh"
 
-class PrimaryGeneratorAction;
+class HepMCG4AsciiReader;
 class G4UIdirectory;
+class G4UIcmdWithoutParameter;
 class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class PrimaryGeneratorMessenger: public G4UImessenger
-{
-public:
-  PrimaryGeneratorMessenger(PrimaryGeneratorAction*);
-  virtual ~PrimaryGeneratorMessenger();
-    
-  void SetNewValue(G4UIcommand*, G4String);
-  G4String GetCurrentValue(G4UIcommand* command);  
-
+class HepMCG4AsciiReaderMessenger : public G4UImessenger {
 private:
-  PrimaryGeneratorAction* Action;
-  G4UIdirectory*          dir; 
-  G4UIcmdWithAString*     RndmCmd;
-  G4UIcmdWithAString*     select;
+  HepMCG4AsciiReader* gen;
 
+  G4UIdirectory* dir;
+  G4UIcmdWithAnInteger* verbose;
+  G4UIcmdWithAString* open;
+
+public:
+  HepMCG4AsciiReaderMessenger(HepMCG4AsciiReader* agen);
+  ~HepMCG4AsciiReaderMessenger();
+
+  void SetNewValue(G4UIcommand* command, G4String newValues);
+  G4String GetCurrentValue(G4UIcommand* command);
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #endif
-

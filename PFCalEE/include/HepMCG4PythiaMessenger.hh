@@ -23,44 +23,49 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file eventgenerator/HepMC/HepMCEx01/include/HepMCG4PythiaMessenger.hh
+/// \brief Definition of the HepMCG4PythiaMessenger class
 //
-// $Id$
+// ====================================================================
 //
-// 
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#ifndef PrimaryGeneratorMessenger_h
-#define PrimaryGeneratorMessenger_h 1
+//   HepMCG4GenericPythiaMessenger.hh
+//   $Id$
+//
+// ====================================================================
+#ifndef HEPMC_G4_PYTHIA_MESSENGER_H
+#define HEPMC_G4_PYTHIA_MESSENGER_H
 
 #include "G4UImessenger.hh"
-#include "globals.hh"
 
-class PrimaryGeneratorAction;
+class HepMCG4PythiaInterface;
 class G4UIdirectory;
+class G4UIcmdWithoutParameter;
 class G4UIcmdWithAString;
+class G4UIcmdWithAnInteger;
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class PrimaryGeneratorMessenger: public G4UImessenger
-{
-public:
-  PrimaryGeneratorMessenger(PrimaryGeneratorAction*);
-  virtual ~PrimaryGeneratorMessenger();
-    
-  void SetNewValue(G4UIcommand*, G4String);
-  G4String GetCurrentValue(G4UIcommand* command);  
-
+class HepMCG4PythiaMessenger : public G4UImessenger {
 private:
-  PrimaryGeneratorAction* Action;
-  G4UIdirectory*          dir; 
-  G4UIcmdWithAString*     RndmCmd;
-  G4UIcmdWithAString*     select;
+  HepMCG4PythiaInterface* gen;
 
+  G4UIdirectory*           dir;
+  G4UIcmdWithAnInteger*    verbose;
+  G4UIcmdWithAnInteger*    mpylist;
+  G4UIcmdWithoutParameter* print;
+  G4UIcommand*             cpyinit;
+  G4UIcmdWithAnInteger*    cpystat;
+  G4UIcommand*             cpygive;
+  G4UIcommand*             setUserParameters;
+  G4UIcmdWithAnInteger*    setSeed;
+  G4UIcommand*             cpyrget;
+  G4UIcommand*             cpyrset;
+  G4UIcmdWithAString*      printRandomStatus;
+  
+public:
+  HepMCG4PythiaMessenger(HepMCG4PythiaInterface* agen);
+  ~HepMCG4PythiaMessenger();
+
+  void SetNewValue(G4UIcommand* command, G4String newValues);
+  G4String GetCurrentValue(G4UIcommand* command);
 };
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
 #endif
-

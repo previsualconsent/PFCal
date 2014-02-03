@@ -6,6 +6,7 @@
 
 HGCSSRecoHit::HGCSSRecoHit(const HGCSSSimHit & aSimHit, const unsigned granularity){
   energy_ = aSimHit.energy();
+  adcCounts_ = 0;
   layer_ = aSimHit.layer();
   noiseFrac_ = 0;
 
@@ -44,6 +45,7 @@ void HGCSSRecoHit::Print(std::ostream & aOs) const{
   aOs << "====================================" << std::endl
       << " = Layer " << layer_ << " cellid " << cellid_ << std::endl
       << " = Energy " << energy_ << " noiseFrac " << noiseFrac_ << std::endl
+      << " = Digi E " << adcCounts_ << " adcCounts." << std::endl
       << "====================================" << std::endl;
 
 }

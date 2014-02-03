@@ -23,44 +23,56 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file eventgenerator/HepMC/HepMCEx01/src/HepMCG4AsciiReader.cc
+/// \brief Implementation of the HepMCG4AsciiReader class
 //
-// $Id$
+// ====================================================================
 //
-// 
+//   HepMCG4AsciiReader.cc
+//   $Id$
+//
+// ====================================================================
+#include "HepMCG4AsciiReader.hh"
+#include "HepMCG4AsciiReaderMessenger.hh"
 
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+#include <iostream>
+#include <fstream>
 
-#ifndef PrimaryGeneratorMessenger_h
-#define PrimaryGeneratorMessenger_h 1
-
-#include "G4UImessenger.hh"
-#include "globals.hh"
-
-class PrimaryGeneratorAction;
-class G4UIdirectory;
-class G4UIcmdWithAString;
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-class PrimaryGeneratorMessenger: public G4UImessenger
+////////////////////////////////////////
+HepMCG4AsciiReader::HepMCG4AsciiReader()
+  :  filename("xxx.dat"), verbose(0)
+////////////////////////////////////////
 {
-public:
-  PrimaryGeneratorMessenger(PrimaryGeneratorAction*);
-  virtual ~PrimaryGeneratorMessenger();
+  asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
+
+  messenger= new HepMCG4AsciiReaderMessenger(this);
+}
+
+/////////////////////////////////////////
+HepMCG4AsciiReader::~HepMCG4AsciiReader()
+/////////////////////////////////////////
+{
+  delete asciiInput;
+  delete messenger;
+}
+
+/////////////////////////////////////
+void HepMCG4AsciiReader::Initialize()
+/////////////////////////////////////
+{
+  delete asciiInput;
+
+  asciiInput= new HepMC::IO_GenEvent(filename.c_str(), std::ios::in);
+}
+
+/////////////////////////////////////////////////////////
+HepMC::GenEvent* HepMCG4AsciiReader::GenerateHepMCEvent()
+/////////////////////////////////////////////////////////
+{
+  HepMC::GenEvent* evt= asciiInput-> read_next_event();
+  if(!evt) return 0; // no more event
+
+  if(verbose>0) evt-> print();
     
-  void SetNewValue(G4UIcommand*, G4String);
-  G4String GetCurrentValue(G4UIcommand* command);  
-
-private:
-  PrimaryGeneratorAction* Action;
-  G4UIdirectory*          dir; 
-  G4UIcmdWithAString*     RndmCmd;
-  G4UIcmdWithAString*     select;
-
-};
-
-//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
-
-#endif
-
+  return evt;
+}

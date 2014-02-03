@@ -43,10 +43,16 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(
                                           PrimaryGeneratorAction* Gun)
 :Action(Gun)
 {
-  gunDir = new G4UIdirectory("/N03/gun/");
-  gunDir->SetGuidance("PrimaryGenerator control");
-   
-  RndmCmd = new G4UIcmdWithAString("/N03/gun/rndm",this);
+  dir= new G4UIdirectory("/generator/");
+  dir-> SetGuidance("Control commands for primary generator");
+
+  select= new G4UIcmdWithAString("/generator/select", this);
+  select-> SetGuidance("select generator type");
+  select-> SetParameterName("generator_type", false, false);
+  select-> SetCandidates("particleGun pythia hepmcAscii");
+  select-> SetDefaultValue("particleGun");
+
+  RndmCmd = new G4UIcmdWithAString("/generator/particleGun/rndm",this);
   RndmCmd->SetGuidance("Shoot randomly the incident particle.");
   RndmCmd->SetGuidance("  Choice : on(default), off");
   RndmCmd->SetParameterName("choice",true);
@@ -59,8 +65,10 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(
 
 PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
+  delete select;
   delete RndmCmd;
-  delete gunDir;
+  delete dir;
+  //delete gunDir;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -68,9 +76,27 @@ PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 void PrimaryGeneratorMessenger::SetNewValue(
                                         G4UIcommand* command, G4String newValue)
 { 
-  if( command == RndmCmd )
-   { Action->SetRndmFlag(newValue);}
+  if ( command==select) {
+    Action->SetGenerator(newValue);
+    G4cout << "current generator type: " 
+	   << Action-> GetGeneratorName() << G4endl;
+  } else if( command == RndmCmd ){ 
+    Action->SetRndmFlag(newValue);
+  }
+  else {}
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
+//////////////////////////////////////////////////////////////////////////////
+G4String PrimaryGeneratorMessenger::GetCurrentValue(G4UIcommand* command)
+//////////////////////////////////////////////////////////////////////////////
+{
+  G4String cv, st;
+  if (command == select) {
+    cv= Action-> GetGeneratorName();
+  } 
+
+ return cv;
+}

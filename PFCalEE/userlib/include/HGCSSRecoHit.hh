@@ -13,6 +13,7 @@ class HGCSSRecoHit{
 public:
   HGCSSRecoHit():
     energy_(0),
+    adcCounts_(0),
     layer_(0),
     cellid_(0),
     noiseFrac_(0)
@@ -24,6 +25,18 @@ public:
 
   inline double energy() const {
     return energy_;
+  };
+
+  inline void energy(const double & energy) {
+    energy_ = energy;
+  };
+
+  inline unsigned adcCounts() const {
+    return adcCounts_;
+  };
+
+  inline void adcCounts(const unsigned & adcCounts){
+    adcCounts_ = adcCounts;
   };
 
   inline unsigned layer() const {
@@ -38,12 +51,20 @@ public:
     return cellid_;
   };
 
+  inline void cellid(const unsigned & id){
+    cellid_ = id;
+  };
+
   inline unsigned fullcellid() const {
     return cellid_ | (layer_<<24);
   };
 
   inline double noiseFraction() const {
     return noiseFrac_;
+  };
+
+  inline void noiseFraction(const double & aFrac){
+    noiseFrac_ = aFrac;
   };
 
   void Add(const HGCSSSimHit & aSimHit);
@@ -89,6 +110,7 @@ public:
 private:
 
   double energy_;
+  unsigned adcCounts_;
   unsigned layer_;
   unsigned cellid_;
   double noiseFrac_;

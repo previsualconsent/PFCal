@@ -88,6 +88,7 @@ class CaloProperties
 {
 public:
   CaloProperties(TString tag);
+  void setEnergiesToScan(std::vector<Float_t> &enList) { genEn_=enList; }
   ~CaloProperties(){};
 
   void writeTo(TDirectoryFile *dir);
@@ -99,6 +100,7 @@ public:
   std::vector<TGraphErrors *> calibCurve_,resCurve_;
   std::vector<Measurement_t> stochTerms_, constTerms_;
   std::map<Float_t,ShowerProfile> showerProfiles_;
+  std::vector<Float_t> genEn_;
 };
 
 void drawHeader();

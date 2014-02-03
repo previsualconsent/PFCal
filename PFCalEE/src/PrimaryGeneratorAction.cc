@@ -44,15 +44,32 @@
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 
+#include "HepMCG4AsciiReader.hh"
+#include "HepMCG4PythiaInterface.hh"
+
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
   G4int n_particle = 1;
-  particleGun  = new G4ParticleGun(n_particle);
+
+  // default generator is particle gun.
+  currentGenerator= particleGun= new G4ParticleGun(n_particle);
+  currentGeneratorName= "particleGun";
+  hepmcAscii= new HepMCG4AsciiReader();
+#ifdef G4LIB_USE_PYTHIA
+  pythiaGen= new HepMCG4PythiaInterface();
+#else
+  pythiaGen= 0;
+#endif
+  gentypeMap["particleGun"]= particleGun;
+  gentypeMap["hepmcAscii"]= hepmcAscii;
+  gentypeMap["pythia"]= pythiaGen;
+
   Detector = (DetectorConstruction*)
-             G4RunManager::GetRunManager()->GetUserDetectorConstruction();  
-  
+             G4RunManager::GetRunManager()->GetUserDetectorConstruction();
+ 
   //create a messenger for this class
   gunMessenger = new PrimaryGeneratorMessenger(this);
 
@@ -77,6 +94,8 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   delete particleGun;
+  delete hepmcAscii;
+  delete pythiaGen;
   delete gunMessenger;
 }
 
@@ -89,7 +108,15 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   G4double x0 = -0.5*(Detector->GetWorldSizeX());
   G4double y0 = 0.*cm, z0 = 0.*cm;
   particleGun->SetParticlePosition(G4ThreeVector(x0,y0,z0));
-  particleGun->GeneratePrimaryVertex(anEvent);
+  if(currentGenerator){
+    currentGenerator->GeneratePrimaryVertex(anEvent);
+  }
+  else
+    G4Exception("PrimaryGeneratorAction::GeneratePrimaries",
+                "PrimaryGeneratorAction001", FatalException,
+                "generator is not instanciated." );
+
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

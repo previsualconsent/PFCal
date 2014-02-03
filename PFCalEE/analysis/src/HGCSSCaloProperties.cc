@@ -85,10 +85,13 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
 	    it!=enCounter.end();
 	    it++)
 	  {
+	    //float ien=it->second.second;
+	    float ien=enCounter[it->first].second;
+
 	    overburden += it->second.first;
 	    Int_t np=showerProf->GetN();
-	    showerProf->SetPoint(np, overburden, it->second.second);
-	    showerProf->SetPointError(np,0 ,sqrt(it->second.second) ); //->to change iteratively
+	    showerProf->SetPoint(np, overburden, ien);
+	    showerProf->SetPointError(np,0 ,sqrt(ien) );
 	  }
 	
 	//instantiate fit function if not yet available
@@ -151,8 +154,9 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
 		it++)
 	      {
 		overburden += it->second.first;
-		h_enVsOverburden     ->Fill( overburden,          it->second.second);
-		h_enVsDistToShowerMax->Fill( overburden-showerMax,it->second.second);
+		Float_t ien=enCounter[it->first].second;
+		h_enVsOverburden     ->Fill( overburden,          ien);
+		h_enVsDistToShowerMax->Fill( overburden-showerMax,ien);
 	      }
 	    
 	    //show fits for 10 events for debug purposes
@@ -193,9 +197,29 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
       }
       
       //account for energy deposit
-      enCounter[ Int_t(volNb) ] = std::pair<Float_t,Float_t>(volX0,den);
-      totalRawEn += den;
-      totalEn    += denWeight;
+      //enCounter[ Int_t(volNb) ] = std::pair<Float_t,Float_t>(volX0,den);
+      //totalRawEn += den;
+      //totalEn    += denWeight;
+      
+      //account for energy deposit with spatial constraints
+      //Float_t maxRhoToAcquire(10000);
+      Float_t maxRhoToAcquire(22);
+      //Float_t maxRhoToAcquire(7);
+      //Float_t maxRhoToAcquire(2.5);
+      Float_t totEnInHits(0);
+      for (unsigned iH(0); iH<(*hitvec).size(); ++iH){//loop on hits 	
+	HGCSSSimHit lHit = (*hitvec)[iH];
+	lHit.layer(unsigned(volNb));
+	double hitEn = lHit.energy();
+	double posx = lHit.get_x();
+	double posy = lHit.get_y();
+	double rho=sqrt(posx*posx+posy*posy);
+	if(rho>maxRhoToAcquire) continue;
+	totEnInHits += hitEn;
+      }
+      totalRawEn += totEnInHits;
+      if(den>0) totalEn += totEnInHits*(denWeight/den);
+      enCounter[ Int_t(volNb) ] = std::pair<Float_t,Float_t>(volX0,totEnInHits);
     }
   fIn->Close();
   
@@ -264,7 +288,20 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
  return true;
 }
 
-CaloProperties::CaloProperties(TString tag) { tag_=tag; gr_showerMax=0; gr_centeredShowerMax=0; }
+CaloProperties::CaloProperties(TString tag) 
+{ 
+  tag_=tag; gr_showerMax=0; gr_centeredShowerMax=0; 
+  genEn_.push_back(5);
+  genEn_.push_back(10);
+  genEn_.push_back(25);
+  genEn_.push_back(50);
+  genEn_.push_back(75);
+  genEn_.push_back(100);
+  genEn_.push_back(200);
+  genEn_.push_back(300);
+  genEn_.push_back(500);
+}
+
   
 void CaloProperties::writeTo(TDirectoryFile *dir)
 {
@@ -296,11 +333,10 @@ void CaloProperties::characterizeCalo()
   gr_centeredShowerMax = (TGraph *) gr_showerMax->Clone("centeredshowermax_"+tag_);
 
   //build shower profiles
-  Float_t genEn[]={5,10,25,50,75,100,150,200,300};//,500};
-  const Int_t nGenEn=sizeof(genEn)/sizeof(Float_t);
+  const Int_t nGenEn=genEn_.size();
   for(Int_t i=0; i<nGenEn; i++)
     {
-      Float_t en=genEn[i];
+      Float_t en=genEn_[i];
       ShowerProfile sh;
       sh.buildShowerProfile(en,tag_);
       if(sh.h_rawEn==0) continue;
