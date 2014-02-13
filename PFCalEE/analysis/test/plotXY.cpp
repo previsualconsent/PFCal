@@ -19,6 +19,7 @@ double getWeight(unsigned layer,std::string aVersion){
   if (aVersion.find("20")!= aVersion.npos || aVersion.find("21") != aVersion.npos){
     if (layer < 20) return 0.8/0.5;
     else return 1.2/0.5;
+    std::cout << "weighting" << std::endl;      
   }
   else {
     if (layer < 20) return 0.8/0.4;
@@ -144,14 +145,17 @@ int main(int argc, char** argv){//main
 		    << " --  position x,y " << posx << "," << posy << std::endl;
 	  lHit.Print(std::cout);
 	}
-	double weightedE = lHit.energy()*getWeight(layer,pVersion);
-	if (weightedE > Emax[iE]) Emax[iE] = weightedE ;
+	double weightedE = lHit.energy()*getWeight(layer,inDir);
 	p_xy[iE][layer]->Fill(posx,posy,weightedE);
 	Etot[layer] += weightedE;
       }//loop on hits
       p_Etot[iE][layer]->Fill(Etot[layer]);
     }//loop on entries
 
+    for (unsigned iL(0); iL<nLayers; ++iL){
+	double layermax = p_xy[iE][iL]->GetBinContent(p_xy[iE][iL]->GetMaximumBin());
+	if (layermax > Emax[iE]) Emax[iE] = layermax ;
+    }
     std::cout << " -- max energy " << Emax[iE] << std::endl;
     
   }//loop on energies
@@ -169,10 +173,16 @@ int main(int argc, char** argv){//main
       p_xy[iE][iL]->SetMaximum(Emax[iE]);
       p_xy[iE][iL]->Draw("colz");
       myc->cd();
+      myc->SetLogz();
+      std::ostringstream title;
+      std::string pad="";
+      if(iL < 10) pad = "0";
+      title << "Layer " << pad << iL;
+      p_xy[iE][iL]->SetTitle(title.str().c_str());
       p_xy[iE][iL]->Draw("colz");
       myc->Update();
       saveName.str("");
-      saveName << "PLOTS/xySimHits_layer" << iL << "_" << genEn[iE] << "GeV";
+      saveName << "PLOTS/xySimHits_layer" << pad << iL << "_" << genEn[iE] << "GeV";
       myc->Print((saveName.str()+".png").c_str());
       myc->Print((saveName.str()+".pdf").c_str());
       outputFile->cd();
