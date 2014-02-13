@@ -53,4 +53,4 @@ python submitRun.py -v 20 -g mu-
 python submitRun.py -v 20 -g e+
 python submitRun.py -v 20 -g pi-
 
-for i in `seq 100 105`; do python submitRun.py -v ${i} -e /store/cmst3/group/hgcal/Geant4 -o ~/work/ntuples -g e-; done
+for i in `seq 100 105`; do python submitRun.py -v ${i} -e /store/cmst3/group/hgcal/Geant4 -o ~/work/ntuples -g e- -n 2000; done

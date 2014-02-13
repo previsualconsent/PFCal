@@ -58,8 +58,8 @@ public:
   bool buildShowerProfile(Float_t eElec, TString version);
 
   TH1F         *h_rawEn,          *h_en,    *h_enFit, *h_showerMax;
-  TH2F         *h_enVsOverburden, *h_enVsDistToShowerMax;
-  TGraphErrors *gr_raw,            *gr_centered;
+  TH2F         *h_enVsOverburden, *h_enVsDistToShowerMax, *h_enfracVsOverburden;
+  TGraphErrors *gr_raw,            *gr_centered, *gr_frac;
   TGraphErrors *gr_unc,            *gr_relUnc;
 };
 

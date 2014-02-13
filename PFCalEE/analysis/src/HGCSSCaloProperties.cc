@@ -7,8 +7,8 @@ double GraphToTF1::operator()(double *x,double *p) { return sp_->Eval( x[0] ) - 
 ShowerProfile::ShowerProfile() 
 {
   h_rawEn=0;          h_en=0;  h_enFit=0;
-  h_enVsOverburden=0; h_enVsDistToShowerMax=0;
-  gr_raw=0;           gr_centered=0;
+  h_enfracVsOverburden=0; h_enVsOverburden=0; h_enVsDistToShowerMax=0;
+  gr_raw=0;           gr_centered=0; gr_frac=0;
   gr_unc=0;           gr_relUnc=0;
 }
 
@@ -19,8 +19,10 @@ void ShowerProfile::writeTo(TDirectory *dir)
   if(h_en)                  h_en->Clone()->Write();
   if(h_enFit)               h_enFit->Clone()->Write();
   if(h_enVsOverburden)      h_enVsOverburden->Clone()->Write();
+  if(h_enfracVsOverburden)      h_enfracVsOverburden->Clone()->Write();
   if(h_enVsDistToShowerMax) h_enVsDistToShowerMax->Clone()->Write();
   if(gr_raw)                gr_raw->Clone()->Write();
+  if(gr_frac)               gr_frac->Clone()->Write();
   if(gr_centered)           gr_centered->Clone()->Write();
   if(gr_unc)                gr_unc->Clone()->Write();
   if(gr_relUnc)             gr_relUnc->Clone()->Write();
@@ -62,21 +64,24 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
   Float_t curEvent(event);
   
   //energy deposits counter <vol number, < absorber X0, En> >
-  std::map<Int_t, std::pair<Float_t,Float_t> > enCounter;
+  std::map<Int_t, std::pair<Float_t,Float_t> > enCounter, enFracCounter;
   Float_t totalRawEn(0), totalEn(0), totalEnFit(0);
 
   //for debugging of the fit function
   TCanvas *c=new TCanvas("showerdis","showerdis",1000,1000);
   c->Divide(3,3);
   Int_t nplots(0);
-  
+
+  float curOverburden(0);
   for(Int_t i=0; i<CaloStack->GetEntriesFast(); i++)
     {
       CaloStack->GetEntry(i);
+      curOverburden+=volX0;
 
       //in case a new event has been found analyze the previous
       if(curEvent!=event){
-	
+	curOverburden=0;
+
 	TGraphErrors *showerProf=new TGraphErrors;
 	showerProf->SetName("showerprof");
 	showerProf->SetMarkerStyle(20);
@@ -139,6 +144,10 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
 		h_enVsOverburden = new TH2F("envsoverburden_"+name,title+";Distance transversed [1/X_{0}]; Energy [MeV]; Events",50,0,overburden,100,0,500);
 		h_enVsOverburden->Sumw2();
 		h_enVsOverburden->SetDirectory(0);
+
+		h_enfracVsOverburden = new TH2F("enfracvsoverburden_"+name,title+";Distance transversed [1/X_{0}]; Energy fraction; Events",50,0,overburden,100,0,1);
+		h_enfracVsOverburden->Sumw2();
+		h_enfracVsOverburden->SetDirectory(0);
 	      }
 	    
 	    //energy distributions
@@ -156,6 +165,7 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
 		overburden += it->second.first;
 		Float_t ien=enCounter[it->first].second;
 		h_enVsOverburden     ->Fill( overburden,          ien);
+		h_enfracVsOverburden     ->Fill( overburden,          enFracCounter[it->first].second);
 		h_enVsDistToShowerMax->Fill( overburden-showerMax,ien);
 	      }
 	    
@@ -188,6 +198,7 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
 	   
 	//clear energy counters for new event
 	enCounter.clear();
+	enFracCounter.clear();
 	totalRawEn=0;
 	totalEn=0;
 	totalEnFit=0;
@@ -202,10 +213,11 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
       //totalEn    += denWeight;
       
       //account for energy deposit with spatial constraints
-      //Float_t maxRhoToAcquire(10000);
-      Float_t maxRhoToAcquire(22);
+      Float_t maxRhoToAcquire(10000);
+      //Float_t maxRhoToAcquire(22);
       //Float_t maxRhoToAcquire(7);
       //Float_t maxRhoToAcquire(2.5);
+      //Float_t maxRhoToAcquire(1.700836*exp(0.1059228425*volNb));
       Float_t totEnInHits(0);
       for (unsigned iH(0); iH<(*hitvec).size(); ++iH){//loop on hits 	
 	HGCSSSimHit lHit = (*hitvec)[iH];
@@ -220,6 +232,7 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
       totalRawEn += totEnInHits;
       if(den>0) totalEn += totEnInHits*(denWeight/den);
       enCounter[ Int_t(volNb) ] = std::pair<Float_t,Float_t>(volX0,totEnInHits);
+      enFracCounter[ Int_t(volNb) ] = std::pair<Float_t,Float_t>(volX0,den>0 ? totEnInHits/den : 0);
     }
   fIn->Close();
   
@@ -245,6 +258,7 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
   gr_raw = new TGraphErrors; 
   gr_raw->SetName("rawshowerprof_"+name); 
   gr_raw->SetTitle(title);
+  gr_frac = (TGraphErrors *) gr_raw->Clone("fracshowerprof_"+name);
   gr_centered = (TGraphErrors *) gr_raw->Clone("rawshowerprof_"+name);
   gr_unc      = (TGraphErrors *) gr_raw->Clone("showerprofunc_"+name);
   gr_relUnc   = (TGraphErrors *) gr_raw->Clone("showerprofrelunc_"+name);
@@ -280,8 +294,19 @@ bool ShowerProfile::buildShowerProfile(Float_t eElec, TString version)
        gr_raw      -> SetPointError(np,xerr,htempraw->GetMeanError());
      }
 
+     //energy fraction profile
+     TH1D *hfractempraw = h_enfracVsOverburden->ProjectionY("fracpy",xbin,xbin);
+     x              = h_enfracVsOverburden->GetXaxis()->GetBinCenter(xbin);
+     xerr           = h_enfracVsOverburden->GetXaxis()->GetBinWidth(xbin)/2;
+     if(hfractempraw->GetMean()>0){
+       Int_t np     = gr_frac->GetN();
+       gr_frac      -> SetPoint     (np,x,   hfractempraw->GetMean());
+       gr_frac      -> SetPointError(np,xerr,hfractempraw->GetMeanError());
+     }
+
      delete htemp;
      delete htempraw;
+     delete hfractempraw;
    }
 
   //all done here
@@ -299,7 +324,7 @@ CaloProperties::CaloProperties(TString tag)
   genEn_.push_back(100);
   genEn_.push_back(200);
   genEn_.push_back(300);
-  genEn_.push_back(500);
+  //  genEn_.push_back(500);
 }
 
   
@@ -478,6 +503,7 @@ void CaloProperties::characterizeCalo()
   
   //shower profile
   TCanvas *craw=new TCanvas("rawprof","rawprof",500,500);
+  TCanvas *cfrac=new TCanvas("fracprof","rawprof",500,500);
   TCanvas *ccen=new TCanvas("cenprof","cenprof",500,500);
   TCanvas *cunc=new TCanvas("uncprof","uncprof",500,500);
   TCanvas *crelunc=new TCanvas("reluncprof","reluncprof",500,500);
@@ -501,6 +527,17 @@ void CaloProperties::characterizeCalo()
     // it->second.gr_raw->GetYaxis()->SetRangeUser(0,it->second.gr_raw->GetMaximum()*1.1);
     leg->AddEntry(it->second.gr_raw,it->second.gr_raw->GetTitle(),"p");
 
+    cfrac->cd();
+    it->second.gr_frac->Draw(igr==0? "ae2p" : "e2p");
+    it->second.gr_frac->SetLineWidth(2);
+    it->second.gr_frac->SetLineColor(igr%2+1);
+    it->second.gr_frac->SetFillColor(0);
+    it->second.gr_frac->SetFillStyle(0);
+    it->second.gr_frac->SetMarkerStyle(20+igr);
+    it->second.gr_frac->SetMarkerColor(igr%2+1);
+    it->second.gr_frac->GetXaxis()->SetTitle("Transversed thickness [1/X_{0}]");
+    it->second.gr_frac->GetYaxis()->SetTitle("<Energy fraction>");
+    // it->second.gr_raw->GetYaxis()->SetRangeUser(0,it->second.gr_raw->GetMaximum()*1.1);
 
     ccen->cd();
     it->second.gr_centered->Draw(igr==0? "ap" : "p");
@@ -551,6 +588,18 @@ void CaloProperties::characterizeCalo()
   craw->Modified();
   craw->Update();
   craw->SaveAs("PLOTS/"+tag_+"_rawprof.png");
+
+  cfrac->cd();
+  drawHeader();
+  leg->SetFillStyle(0);
+  leg->SetFillColor(0);
+  leg->SetBorderSize(0);
+  leg->SetTextFont(42);
+  leg->SetNColumns(5);
+  leg->Draw();
+  cfrac->Modified();
+  cfrac->Update();
+  cfrac->SaveAs("PLOTS/"+tag_+"_fracprof.png");
 
   ccen->cd();
   gr_centeredShowerMax->Draw("l");

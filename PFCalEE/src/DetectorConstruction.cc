@@ -101,23 +101,24 @@ DetectorConstruction::DetectorConstruction(G4int ver) : version_(ver)
 
     case v_HGCAL_CONCEPT:
       G4cout << "[DetectorConstruction] starting concept" << G4endl;
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(0.5*5.612*mm,3.0*mm,0.200*mm,1.0*mm,1.0*mm) );
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(0.8*5.612*mm,3.0*mm,0.200*mm,1.0*mm,1.0*mm) );
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(1.2*5.612*mm,3.0*mm,0.200*mm,1.0*mm,1.0*mm) );
+      m_caloStruct.push_back( SamplingSection(0.0*mm,3.0*mm,0.200*mm,2.0*mm,2.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(1.6*mm,3.0*mm,0.200*mm,2.0*mm,2.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(3.3*mm,3.0*mm,0.200*mm,2.0*mm,2.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(5.6*mm,3.0*mm,0.200*mm,2.0*mm,2.0*mm) );
       break;
 
     case v_HGCAL_CONCEPT_thickSi:
       G4cout << "[DetectorConstruction] starting concept thick Si" << G4endl;
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(0.5*5.612*mm,3.0*mm,0.525*mm,1.0*mm,1.0*mm) );
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(0.8*5.612*mm,3.0*mm,0.525*mm,1.0*mm,1.0*mm) );
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(1.2*5.612*mm,3.0*mm,0.525*mm,1.0*mm,1.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(1.6*mm,3.0*mm,0.525*mm,1.0*mm,1.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(3.3*mm,3.0*mm,0.525*mm,1.0*mm,1.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(5.6*mm,3.0*mm,0.525*mm,1.0*mm,1.0*mm) );
       break;
 
     case v_HGCAL_CONCEPT_thinSi:
       G4cout << "[DetectorConstruction] starting concept thin Si" << G4endl;
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(0.5*5.612*mm,3.0*mm,0.100*mm,1.0*mm,1.0*mm) );
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(0.8*5.612*mm,3.0*mm,0.100*mm,1.0*mm,1.0*mm) );
-      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(1.2*5.612*mm,3.0*mm,0.100*mm,1.0*mm,1.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(1.6*mm,3.0*mm,0.100*mm,1.0*mm,1.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(3.3*mm,3.0*mm,0.100*mm,1.0*mm,1.0*mm) );
+      for(int i=0; i<10; i++) m_caloStruct.push_back( SamplingSection(5.6*mm,3.0*mm,0.100*mm,1.0*mm,1.0*mm) );
       break;
 
     case v_HGCAL_CONCEPT_CALICE:

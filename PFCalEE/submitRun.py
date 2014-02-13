@@ -19,7 +19,7 @@ parser.add_option('-S', '--no-submit'  ,    action="store_true",  dest='nosubmit
 
 nevents=opt.nevts
 
-for en in [5,10,25,50,75,100,150,200,300]: #,500]:
+for en in [5,10,20,25,50,75,100,150,200,300]: #,500]:
 
     outDir='%s/version_%d/%s/e_%d'%(opt.out,opt.version,opt.gun,en)
     if opt.alpha>0 : outDir='%s_%3.3f'%(outDir,opt.alpha) 
@@ -33,7 +33,7 @@ for en in [5,10,25,50,75,100,150,200,300]: #,500]:
     scriptFile.write('PFCalEE g4steer.mac %d\n'%opt.version)
     if len(opt.eos)>0:
         outTag='version_%d_e%d'%(opt.version,en)
-        scriptFile.write('cmsStage PFcal.root %s/HGcal_%s.root'%(opt.eos,outTag))
+        scriptFile.write('cmsStage -f PFcal.root %s/HGcal_%s.root\n'%(opt.eos,outTag))
     scriptFile.write('echo "All done"\n')
     scriptFile.close()
 
