@@ -54,6 +54,7 @@ class CaloDimen
         CaloDimen(){}
         CaloDimen(std::string version)
         {
+
             if (version == "version_20")
             {
                 m_layers.push_back(10);
@@ -296,7 +297,8 @@ int main(int argc, char** argv){//main
     const unsigned pNevts = atoi(argv[1]);
     const float radius = atof(argv[2]);
     const std::string inDir = argv[3];
-    const std::string version = inDir.substr(0,inDir.find("/"));
+    int start = inDir.find("version");
+    const std::string version = inDir.substr(start,inDir.find("/",start)-start);
     bool debug = false;
     std::string angle(argv[4]);
     if (argc >5) debug = atoi(argv[5]);
@@ -439,23 +441,17 @@ int main(int argc, char** argv){//main
         {
             if (i%10 == 0) std::cout << "... Fitting event: " << i << std::endl;
 
-            //std::cout << "1" << std::endl;
             float showermax_layer = p_xyz[i]->ProjectionZ()->GetMaximumBin();
             Position showermax(p_xy[i][(int)showermax_layer]->GetMean(1),
                     p_xy[i][(int)showermax_layer]->GetMean(2),
                     showermax_layer);
             Position vertex(0.0f,0.0f,-143.55f);
-            //std::cout << "2" << std::endl;
             EventShowerCone cone(showermax,vertex,version,i,genEn[iE], radius);
-            //std::cout << "3" << std::endl;
             cone.SetHits(hits[i]);
-            //std::cout << "4" << std::endl;
-            if(i < 10) cone.WritePlots();
+            if(i == 5) cone.WritePlots();
             float angle[2];
-            cone.FitEvent(angle, (event < 10) );
-            //std::cout << "5" << std::endl;
+            cone.FitEvent(angle, (event == 5) );
             p_angle[iE]->Fill(angle[0],angle[1]);
-            if(i == 9) std::cout << "alskaf" <<  p_xy[i][0]->GetEntries() << std::endl;
         }
 
     }//loop on energies
