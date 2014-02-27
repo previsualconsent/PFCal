@@ -6,3 +6,4 @@ LSFJOB_*
 bin
 obj
 *.root
+*.sw*
